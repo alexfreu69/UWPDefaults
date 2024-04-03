@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using Microsoft.Win32.SafeHandles;
 using Microsoft.Win32;
+using System.Collections;
 
 namespace UWPDefaults
 {
@@ -48,6 +49,8 @@ namespace UWPDefaults
         {
             const string subKey = "LocalState";
             uint regBoolType = 0x5f5e10b;
+            uint regStringType = 0x5f5e10c;
+            uint regInt32Type = 0x5f5e104;
             SafeRegistryHandle hiveHandle;
 
             string hiveFile = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", packageID, @"Settings\settings.dat");
@@ -69,11 +72,12 @@ namespace UWPDefaults
                     result = RegGetValue(sub1KeyHandle, "", valueName, 0x0000ffff, out lpType, null, ref cbData);
                     if (result != 0)
                     {
+                        result = 0;
                         if (valueType == "REG_BOOL")
                         {
                             byte[] binaryValue = new byte[9];
                             if (valueData == "True")
-                            { 
+                            {
                                 binaryValue[0] = 1;
                             }
                             else
@@ -82,10 +86,39 @@ namespace UWPDefaults
                             }
                             GetTimeStamp(binaryValue, 1);
                             result = RegSetValueEx(sub1KeyHandle, valueName, 0, regBoolType, binaryValue, (uint)binaryValue.Length);
-                            if (result==0)
+                        }
+                        else if (valueType == "REG_SZ")
+                        {
+                            byte[] stringBuffer = Encoding.Unicode.GetBytes(valueData + '\u0000');
+                            byte[] binaryValue = new byte[stringBuffer.Length + 8];
+                            Buffer.BlockCopy(stringBuffer, 0, binaryValue, 0, stringBuffer.Length);
+                            GetTimeStamp(binaryValue, stringBuffer.Length);
+                            result = RegSetValueEx(sub1KeyHandle, valueName, 0, regStringType, binaryValue, (uint)binaryValue.Length);
+                        }
+                        else if (valueType == "REG_DWORD")
+                        {
+                            if (valueData.Length == 8)
                             {
-                                Console.WriteLine("Value '{0}' successfully written to package '{1}'", valueName, packageID);
+                                UInt32 x = Convert.ToUInt32("0x"+valueData, 16);
+                                byte[] binaryValue = new byte[12];
+                                BitConverter.GetBytes(x).CopyTo(binaryValue, 0);
+                                GetTimeStamp(binaryValue, 4);
+                                result = RegSetValueEx(sub1KeyHandle, valueName, 0, regInt32Type, binaryValue, (uint)binaryValue.Length);
                             }
+                        }
+                        else
+                        {
+                            //invalid Registry value type
+                            result = -1;
+                        }
+
+                        if (result == 0)
+                        {
+                            Console.WriteLine("Value '{0}' successfully written to package '{1}'", valueName, packageID);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error {0:X8} writing '{1}' to package '{2}'", result, valueName, packageID);
                         }
 
                     }
