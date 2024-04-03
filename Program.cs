@@ -118,7 +118,7 @@ namespace UWPDefaults
                         }
                         else
                         {
-                            Console.WriteLine("Error {0:X8} writing '{1}' to package '{2}'", result, valueName, packageID);
+                            Console.WriteLine("Error 0x{0:X8} writing '{1}' to package '{2}'", result, valueName, packageID);
                         }
 
                     }
