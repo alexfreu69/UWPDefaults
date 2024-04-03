@@ -34,6 +34,6 @@ To identify the value name, you can copy the settings file from the packages fol
 Select the menu entry File|Load Hive... and select the settings.dat. Assign a temporary name and look for the subkey LocalState.
 Ignore the last 8 bytes and look at the first bytes.
 
-REG_BOOL is one byte. 00 = False, 01 = True
-REG_STRING is a Unicode string with 00 00 appended.
+REG_BOOL is one byte. 00 = False, 01 = True\
+REG_STRING is a Unicode string with 00 00 appended.\
 REG_DWORD are four bytes.
