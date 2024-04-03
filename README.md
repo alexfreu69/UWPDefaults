@@ -27,6 +27,8 @@ For the Calculator:
  The app uses the Dark theme. Other values are Default and Light
  The app has Scientific as the default mode
 
+Currently only REG_BOOL and REG_SZ are supported.
+
 The undocumented registry value types are:
 
 REG_SZ	0x5f5e10c\
