@@ -38,6 +38,7 @@ All values have the latest change timestamp in 8 byte FILETIME format appended.
 To identify the value name, you can copy the settings file from the packages folder to a temporary folder, open Regedit as administratator and select HKEY_LOCAL_MACHINE.
 Select the menu entry File|Load Hive... and select the settings.dat. Assign a temporary name and look for the subkey LocalState.
 Ignore the last 8 bytes and look at the first bytes.
+Don't forget to unload the registry hive again.
 
 REG_BOOL is one byte. 00 = False, 01 = True
 REG_STRING is a Unicode string with 00 00 appended.
