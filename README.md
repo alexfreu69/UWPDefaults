@@ -1,7 +1,7 @@
 # UWPDefaults
 
 UWPDefaults opens the settings.dat registry hive from %localappdata%\Packages\\<PackageID\>\Settings and sets a default value when a setting has not been defined yet.
-The settings are intialized when the user opens the app the first time. To predefine some values, UWPDefaults can be executed when the user logs in.
+The settings are initialized when the user opens the app the first time. To predefine some values, UWPDefaults can be executed before that, when the user logs in.
 
 Syntax: UWPDefaults c:\settings\UWPDefaults.ini
 
