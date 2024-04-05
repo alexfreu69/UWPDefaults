@@ -11,6 +11,8 @@ Microsoft.WindowsNotepad_8wekyb3d8bbwe|GhostFile|REG_BOOL|False
 Microsoft.ScreenSketch_8wekyb3d8bbwe|AutoSaveCaptures|REG_BOOL|False
 Microsoft.WindowsCalculator_8wekyb3d8bbwe|SelectedAppTheme|REG_SZ|Dark
 Microsoft.WindowsCalculator_8wekyb3d8bbwe|Mode|REG_DWORD|00000001
+Microsoft.WindowsCalculator_8wekyb3d8bbwe|Test|REG_QWORD|FFFFFFFF00000001
+Microsoft.WindowsCalculator_8wekyb3d8bbwe|Test2|REG_BINARY|25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,6f
 
 The syntax for the REG_DWORD format is the same as in reg files.
 If you see these hexadecimal bytes at the beginning: 21 43 65 87, you should write 87654321 without 0x in the ini file.
@@ -27,11 +29,17 @@ For the Calculator:\
  The app uses the Dark theme. Other values are Default and Light\
  Scientific is the calculation mode
 
+The Test values have no effect.
+
+Currently only the registry root level LocalState is supported.
+
 The undocumented registry value types are:
 
 REG_SZ	0x5f5e10c\
 REG_BOOL	0x5f5e10b\
-REG_DWORD	0x5f5e104
+REG_DWORD	0x5f5e104\
+REG_QWORD   0x5f5e106\
+REG_BINARY   0x5f5e10d
 
 All values have the latest change timestamp in 8 byte FILETIME format appended.
 
@@ -43,4 +51,5 @@ Don't forget to unload the registry hive again.
 REG_BOOL is one byte. 00 = False, 01 = True
 REG_STRING is a Unicode string with 00 00 appended.
 REG_DWORD are four bytes.
+REG_QWORD are eight bytes.
 

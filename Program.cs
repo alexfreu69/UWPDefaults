@@ -51,6 +51,8 @@ namespace UWPDefaults
             uint regBoolType = 0x5f5e10b;
             uint regStringType = 0x5f5e10c;
             uint regInt32Type = 0x5f5e104;
+            uint regInt64Type = 0x5f5e106;
+            uint regBinaryType = 0x5f5e10d;
             SafeRegistryHandle hiveHandle;
 
             string hiveFile = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", packageID, @"Settings\settings.dat");
@@ -106,6 +108,23 @@ namespace UWPDefaults
                                 result = RegSetValueEx(sub1KeyHandle, valueName, 0, regInt32Type, binaryValue, (uint)binaryValue.Length);
                             }
                         }
+                        else if (valueType == "REG_QWORD")
+                        {
+                            if (valueData.Length == 16)
+                            {
+                                UInt64 x = Convert.ToUInt64("0x" + valueData, 16);
+                                byte[] binaryValue = new byte[16];
+                                BitConverter.GetBytes(x).CopyTo(binaryValue, 0);
+                                GetTimeStamp(binaryValue, 8);
+                                result = RegSetValueEx(sub1KeyHandle, valueName, 0, regInt64Type, binaryValue, (uint)binaryValue.Length);
+                            }
+                        }
+                        else if (valueType == "REG_BINARY")
+                        {
+                            byte[] binaryValue = GetBinaryFromString(valueData,8);
+                            GetTimeStamp(binaryValue, binaryValue.Length-8);
+                            result = RegSetValueEx(sub1KeyHandle, valueName, 0, regBinaryType, binaryValue, (uint)binaryValue.Length);
+                        }
                         else
                         {
                             //invalid Registry value type
@@ -133,6 +152,17 @@ namespace UWPDefaults
                 Console.WriteLine("Settings file '{0}' doesn't exist.",hiveFile);
                 return;
             }
+        }
+
+        private static byte[] GetBinaryFromString(string valueData, int v)
+        {
+            string[] a = valueData.Split(',');
+            byte[] b = new byte[a.Length+v];
+            for (int i = 0; i < a.Length; i++)
+            {
+                b[i] = Convert.ToByte("0x" + a[i],16);
+            }
+            return b;
         }
 
         private static void GetTimeStamp(byte[] binaryValue, int v)
