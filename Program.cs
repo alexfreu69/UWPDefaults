@@ -48,11 +48,16 @@ namespace UWPDefaults
         static void CheckSetting(string packageID, string valueName, string valueType, string valueData)
         {
             const string subKey = "LocalState";
-            uint regBoolType = 0x5f5e10b;
-            uint regStringType = 0x5f5e10c;
-            uint regInt32Type = 0x5f5e104;
-            uint regInt64Type = 0x5f5e106;
-            uint regBinaryType = 0x5f5e10d;
+            const uint regBoolType = 0x5f5e10b;
+            const uint regStringType = 0x5f5e10c;
+            const uint regInt16Type = 0x5f5e103;
+            const uint regInt32Type = 0x5f5e104;
+            const uint regInt32BigEndianType = 0x5f5e105;
+            const uint regInt64Type = 0x5f5e106;
+            const uint regInt64BigEndianType = 0x5f5e109;
+            const uint regBinaryType = 0x5f5e10d;
+            const uint regExpandType = 0x5f5e10c; //wrong * still to investigate
+
             SafeRegistryHandle hiveHandle;
 
             string hiveFile = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages", packageID, @"Settings\settings.dat");
@@ -89,34 +94,47 @@ namespace UWPDefaults
                             GetTimeStamp(binaryValue, 1);
                             result = RegSetValueEx(sub1KeyHandle, valueName, 0, regBoolType, binaryValue, (uint)binaryValue.Length);
                         }
-                        else if (valueType == "REG_SZ")
+                        else if (valueType == "REG_SZ" || valueType == "REG_EXPAND_SZ")
                         {
                             byte[] stringBuffer = Encoding.Unicode.GetBytes(valueData + '\u0000');
                             byte[] binaryValue = new byte[stringBuffer.Length + 8];
                             Buffer.BlockCopy(stringBuffer, 0, binaryValue, 0, stringBuffer.Length);
                             GetTimeStamp(binaryValue, stringBuffer.Length);
-                            result = RegSetValueEx(sub1KeyHandle, valueName, 0, regStringType, binaryValue, (uint)binaryValue.Length);
+                            result = RegSetValueEx(sub1KeyHandle, valueName, 0, valueType == "REG_SZ" ? regStringType : regExpandType, binaryValue, (uint)binaryValue.Length);
                         }
-                        else if (valueType == "REG_DWORD")
+                        else if (valueType == "REG_WORD")
+                        {
+                            if (valueData.Length == 4)
+                            {
+                                UInt16 x = Convert.ToUInt16("0x" + valueData, 16);
+                                byte[] binaryValue = new byte[10];
+                                BitConverter.GetBytes(x).CopyTo(binaryValue, 0);
+                                GetTimeStamp(binaryValue, 2);
+                                result = RegSetValueEx(sub1KeyHandle, valueName, 0, regInt16Type, binaryValue, (uint)binaryValue.Length);
+                            }
+                        }
+                        else if (valueType == "REG_DWORD" || valueType == "REG_DWORD_BIG_ENDIAN")
                         {
                             if (valueData.Length == 8)
                             {
                                 UInt32 x = Convert.ToUInt32("0x"+valueData, 16);
+                                if (valueType == "REG_DWORD_BIG_ENDIAN") x = RevertBytes(x);
                                 byte[] binaryValue = new byte[12];
                                 BitConverter.GetBytes(x).CopyTo(binaryValue, 0);
                                 GetTimeStamp(binaryValue, 4);
-                                result = RegSetValueEx(sub1KeyHandle, valueName, 0, regInt32Type, binaryValue, (uint)binaryValue.Length);
+                                result = RegSetValueEx(sub1KeyHandle, valueName, 0, valueType == "REG_DWORD" ? regInt32Type : regInt32BigEndianType, binaryValue, (uint)binaryValue.Length);
                             }
                         }
-                        else if (valueType == "REG_QWORD")
+                        else if (valueType == "REG_QWORD" || valueType == "REG_QWORD_BIG_ENDIAN")
                         {
                             if (valueData.Length == 16)
                             {
                                 UInt64 x = Convert.ToUInt64("0x" + valueData, 16);
+                                if (valueType == "REG_QWORD_BIG_ENDIAN") x = RevertBytes(x);
                                 byte[] binaryValue = new byte[16];
                                 BitConverter.GetBytes(x).CopyTo(binaryValue, 0);
                                 GetTimeStamp(binaryValue, 8);
-                                result = RegSetValueEx(sub1KeyHandle, valueName, 0, regInt64Type, binaryValue, (uint)binaryValue.Length);
+                                result = RegSetValueEx(sub1KeyHandle, valueName, 0, valueType == "REG_QWORD" ? regInt64Type : regInt64BigEndianType, binaryValue, (uint)binaryValue.Length);
                             }
                         }
                         else if (valueType == "REG_BINARY")
@@ -152,6 +170,18 @@ namespace UWPDefaults
                 Console.WriteLine("Settings file '{0}' doesn't exist.",hiveFile);
                 return;
             }
+        }
+
+        private static UInt32 RevertBytes(UInt32 val)
+        {
+            return (val & 0x000000FF) << 24 | (val & 0x0000FF00) << 8 | (val & 0x00FF0000) >> 8 | ((UInt32)(val & 0xFF000000)) >> 24;
+        }
+
+        private static UInt64 RevertBytes(UInt64 val)
+        {
+            byte[] intAsBytes = BitConverter.GetBytes(val);
+            Array.Reverse(intAsBytes);
+            return BitConverter.ToUInt64(intAsBytes, 0);
         }
 
         private static byte[] GetBinaryFromString(string valueData, int v)
