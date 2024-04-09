@@ -50,7 +50,7 @@ Unknown purpose:
 
 0x5f5e105 (same as REG_DWORD)\
 0x5f5e107 (same as REG_QWORD - maybe timestamp?)\
-0x5f5e109 maybe big endian QWORD
+0x5f5e109 maybe big endian QWORD\
 0x5f5e10e (same as REG_QWORD - maybe timestamp?)\
 0x5f5e114\
 
@@ -62,8 +62,8 @@ Select the menu entry File|Load Hive... and select the settings.dat. Assign a te
 Ignore the last 8 bytes and look at the first bytes.
 Don't forget to unload the registry hive again.
 
-REG_BOOL is one byte. 00 = False, 01 = True
-REG_STRING is a Unicode string with 00 00 appended.
-REG_DWORD are four bytes.
-REG_QWORD are eight bytes.
+REG_BOOL is one byte. 00 = False, 01 = True\
+REG_STRING is a Unicode string with 00 00 appended.\
+REG_DWORD are four bytes.\
+REG_QWORD are eight bytes.\
 
