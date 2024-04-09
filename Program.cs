@@ -71,11 +71,23 @@ namespace UWPDefaults
                 }
                 using (var baseKey = RegistryKey.FromHandle(hiveHandle))
                 {
-                    var sub1Key = baseKey.OpenSubKey(subKey,true);
+                    RegistryKey sub1Key;
+                    int idx = valueName.IndexOf('\\');
+                    if (idx == -1)
+                    {
+                        sub1Key=baseKey.OpenSubKey(subKey, true);
+                    }
+                    else
+                    {
+                        sub1Key=baseKey.OpenSubKey(subKey+"\\"+valueName.Substring(0, idx),true);
+                        valueName= valueName.Substring(idx+1);
+                    }
+
                     IntPtr sub1KeyHandle = sub1Key.Handle.DangerousGetHandle();
 
                     uint lpType;
                     uint cbData=0;
+                    uint regType = 0;
                     result = RegGetValue(sub1KeyHandle, "", valueName, 0x0000ffff, out lpType, null, ref cbData);
                     if (result != 0)
                     {
@@ -113,7 +125,7 @@ namespace UWPDefaults
                                 result = RegSetValueEx(sub1KeyHandle, valueName, 0, regInt16Type, binaryValue, (uint)binaryValue.Length);
                             }
                         }
-                        else if (valueType == "REG_DWORD" || valueType == "REG_DWORD_BIG_ENDIAN")
+                        else if (valueType == "REG_DWORD" || valueType == "REG_DWORD_BIG_ENDIAN" || valueType == "0x5f5e105")
                         {
                             if (valueData.Length == 8)
                             {
@@ -122,7 +134,15 @@ namespace UWPDefaults
                                 byte[] binaryValue = new byte[12];
                                 BitConverter.GetBytes(x).CopyTo(binaryValue, 0);
                                 GetTimeStamp(binaryValue, 4);
-                                result = RegSetValueEx(sub1KeyHandle, valueName, 0, valueType == "REG_DWORD" ? regInt32Type : regInt32BigEndianType, binaryValue, (uint)binaryValue.Length);
+                                if (valueType == "0x5f5e105")
+                                {
+                                    regType = 0x5f5e105;
+                                }
+                                else
+                                {
+                                    regType = (valueType == "REG_DWORD" ? regInt32Type : regInt32BigEndianType);
+                                }
+                                result = RegSetValueEx(sub1KeyHandle, valueName, 0, regType, binaryValue, (uint)binaryValue.Length);
                             }
                         }
                         else if (valueType == "REG_QWORD" || valueType == "REG_QWORD_BIG_ENDIAN")
@@ -171,6 +191,7 @@ namespace UWPDefaults
                 return;
             }
         }
+
 
         private static UInt32 RevertBytes(UInt32 val)
         {
