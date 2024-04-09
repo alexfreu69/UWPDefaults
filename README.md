@@ -39,20 +39,22 @@ The Test values have no effect.
 
 The undocumented registry value types are:
 
-REG_SZ	0x5f5e10c\
-REG_BOOL	0x5f5e10b\
-REG_DWORD	0x5f5e104\
-REG_QWORD   0x5f5e106\
-REG_BINARY   0x5f5e10d\
-REG_WORD     0x5f5e103
+REG_SZ	        0x5f5e10c\
+REG_BOOL	    0x5f5e10b\
+REG_DWORD	    0x5f5e104\
+REG_QWORD       0x5f5e106\
+REG_BINARY      0x5f5e10d\
+REG_WORD        0x5f5e103\
+REG_UWP_UINT32  0x5f5e105
 
-Unknown purpose:
+Currently not supported:
 
-0x5f5e105 (same as REG_DWORD)\
-0x5f5e107 (same as REG_QWORD - maybe timestamp?)\
-0x5f5e109 maybe big endian QWORD\
-0x5f5e10e (same as REG_QWORD - maybe timestamp?)\
-0x5f5e114\
+0x5f5e107 UInt64\
+0x5f5e109 Double\
+0x5f5e10e DateTimeOffset\
+0x5f5e114 Array of Byte
+
+See https://github.com/ADeltaX/UWPSettingsEditor/blob/6e77b7436341f237d37403bb16e48bd8b0fdb939/src/UWPSettingsEditor/Enums/DataTypeEnum.cs#L31
 
 
 All values have the latest change timestamp in 8 byte FILETIME format appended.
@@ -65,5 +67,5 @@ Don't forget to unload the registry hive again.
 REG_BOOL is one byte. 00 = False, 01 = True\
 REG_STRING is a Unicode string with 00 00 appended.\
 REG_DWORD are four bytes.\
-REG_QWORD are eight bytes.\
+REG_QWORD are eight bytes.
 

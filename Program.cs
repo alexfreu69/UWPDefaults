@@ -125,7 +125,7 @@ namespace UWPDefaults
                                 result = RegSetValueEx(sub1KeyHandle, valueName, 0, regInt16Type, binaryValue, (uint)binaryValue.Length);
                             }
                         }
-                        else if (valueType == "REG_DWORD" || valueType == "REG_DWORD_BIG_ENDIAN" || valueType == "0x5f5e105")
+                        else if (valueType == "REG_DWORD" || valueType == "REG_DWORD_BIG_ENDIAN" || valueType == "0x5f5e105" || valueType == "REG_UWP_UINT32")
                         {
                             if (valueData.Length == 8)
                             {
@@ -165,8 +165,18 @@ namespace UWPDefaults
                         }
                         else
                         {
-                            //invalid Registry value type
-                            result = -1;
+                            if (valueName.StartsWith("0x"))
+                            {
+                                regType = Convert.ToUInt32(valueName);
+                                byte[] binaryValue = GetBinaryFromString(valueData, 8);
+                                GetTimeStamp(binaryValue, binaryValue.Length - 8);
+                                result = RegSetValueEx(sub1KeyHandle, valueName, 0, regType, binaryValue, (uint)binaryValue.Length);
+                            }
+                            else
+                            {
+                                //invalid Registry value type
+                                result = -1;
+                            }
                         }
 
                         if (result == 0)
